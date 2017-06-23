@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 //----- License --------------------------------------------
@@ -101,12 +102,15 @@ func startHTTPServer(RunAmount *int, wlgPortNum int, wlgDebugging bool) *http.Se
 				defer Openfile.Close()
 				FileHeader := make([]byte, 512)
 				Openfile.Read(FileHeader)
+
 				FileContentType := http.DetectContentType(FileHeader)
 
 				FileStat, _ := Openfile.Stat()
 				FileSize := strconv.FormatInt(FileStat.Size(), 10)
+				if !strings.Contains(Filename, "html") { //Exception handle HTML; all non-HTML is a FILE vs. being rendered
+					writerForHTTPResp.Header().Set("Content-Disposition", "attachment; filename="+Filename)
+				}
 
-				writerForHTTPResp.Header().Set("Content-Disposition", "attachment; filename="+Filename)
 				writerForHTTPResp.Header().Set("Content-Type", FileContentType)
 				writerForHTTPResp.Header().Set("Content-Length", FileSize)
 
